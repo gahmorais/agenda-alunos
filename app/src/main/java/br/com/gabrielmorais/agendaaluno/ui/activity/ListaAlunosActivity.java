@@ -38,6 +38,7 @@ public class ListaAlunosActivity extends AppCompatActivity {
     public static final String TITULO_APPBAR = "Lista de alunos";
 
     private final AlunoDAO dao = new AlunoDAO();
+    private ArrayAdapter<Aluno> adapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -75,17 +76,18 @@ public class ListaAlunosActivity extends AppCompatActivity {
     private void configuraLista() {
         ListView listaDeAlunos = findViewById(R.id.activity_lista_alunos_listview);
         final List<Aluno> alunos = dao.todos();
-        configuraAdapter(listaDeAlunos);
-        configuraListenerDeCliquePorItem( listaDeAlunos);
+        configuraAdapter(listaDeAlunos , alunos );
+        configuraListenerDeCliquePorItem( listaDeAlunos );
 
         listaDeAlunos.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(ListaAlunosActivity.this, "Clique Longo", Toast.LENGTH_SHORT).show();
-                return false;
+                Aluno alunoEscolhido = (Aluno) parent.getItemAtPosition( position );
+                dao.remove( alunoEscolhido );
+                adapter.remove( alunoEscolhido );
+                return true;
             }
         });
-
     }
     
 
@@ -105,7 +107,8 @@ public class ListaAlunosActivity extends AppCompatActivity {
         startActivity( vaiParaFormularioActivity );
     }
 
-    private void configuraAdapter(ListView listaDeAlunos) {
-        listaDeAlunos.setAdapter(new ArrayAdapter<>( this , android.R.layout.simple_list_item_1 , dao.todos() ) );
+    private void configuraAdapter(ListView listaDeAlunos, List<Aluno> alunos) {
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, alunos );
+        listaDeAlunos.setAdapter( adapter );
     }
 }
