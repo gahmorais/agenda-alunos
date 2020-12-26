@@ -13,19 +13,18 @@ package br.com.gabrielmorais.agendaaluno.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import java.util.List;
 
 import br.com.gabrielmorais.agendaaluno.R;
 import br.com.gabrielmorais.agendaaluno.dao.AlunoDAO;
@@ -47,7 +46,11 @@ public class ListaAlunosActivity extends AppCompatActivity {
 
         setTitle( TITULO_APPBAR );
         configurFabNovoAluno();
-
+        configuraLista();
+        for ( int i = 0; i< 10;i++ ) {
+            dao.salva(new Aluno("Alex", "1122223333", "alex@alura.com.br"));
+            dao.salva(new Aluno("Fran", "1122223333", "fran@alura.com.br"));
+        }
     }
 
 
@@ -63,6 +66,27 @@ public class ListaAlunosActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        getMenuInflater().inflate( R.menu.activity_lista_alunos_menu , menu );
+
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+
+        int itemId = item.getItemId();
+
+        if ( itemId == R.id.acitivty_lista_alunos_menu_remover ) {
+
+            AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+            Aluno alunoEscolhido = adapter.getItem(menuInfo.position);
+            remove(alunoEscolhido);
+        }
+        return super.onContextItemSelected(item);
+    }
+
     private void abreFormularioModoInsereAluno() {
         startActivity( new Intent( ListaAlunosActivity.this, FormularioAlunoActivity.class ) );
     }
@@ -70,26 +94,29 @@ public class ListaAlunosActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        configuraLista();
+        atualizaAlunos();
+
+    }
+
+    private void atualizaAlunos() {
+        adapter.clear();
+        adapter.addAll( dao.todos() );
     }
 
     private void configuraLista() {
-        ListView listaDeAlunos = findViewById(R.id.activity_lista_alunos_listview);
-        final List<Aluno> alunos = dao.todos();
-        configuraAdapter(listaDeAlunos , alunos );
-        configuraListenerDeCliquePorItem( listaDeAlunos );
 
-        listaDeAlunos.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Aluno alunoEscolhido = (Aluno) parent.getItemAtPosition( position );
-                dao.remove( alunoEscolhido );
-                adapter.remove( alunoEscolhido );
-                return true;
-            }
-        });
+        ListView listaDeAlunos = findViewById(R.id.activity_lista_alunos_listview);
+        configuraAdapter( listaDeAlunos );
+        configuraListenerDeCliquePorItem( listaDeAlunos );
+        registerForContextMenu( listaDeAlunos );
+
     }
-    
+
+    public void remove(Aluno alunoEscolhido) {
+        dao.remove( alunoEscolhido );
+        adapter.remove( alunoEscolhido );
+    }
+
 
     private void configuraListenerDeCliquePorItem( ListView listaDeAlunos) {
         listaDeAlunos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -107,8 +134,8 @@ public class ListaAlunosActivity extends AppCompatActivity {
         startActivity( vaiParaFormularioActivity );
     }
 
-    private void configuraAdapter(ListView listaDeAlunos, List<Aluno> alunos) {
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, alunos );
+    private void configuraAdapter(ListView listaDeAlunos) {
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1 );
         listaDeAlunos.setAdapter( adapter );
     }
 }
