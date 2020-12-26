@@ -2,10 +2,13 @@ package br.com.gabrielmorais.agendaaluno.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import br.com.gabrielmorais.agendaaluno.R;
@@ -32,9 +35,28 @@ public class FormularioAlunoActivity extends AppCompatActivity {
 
         setTitle(TITULO_APPBAR_NOVO_ALUNO);
         inicializacaoDosCampos();
-        configuraBotaoSalvar();
         carregaAluno();
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate( R.menu.actyivity_formulario_aluno_menu, menu );
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        int itemId = item.getItemId();
+
+        if ( itemId == R.id.activity_formulario_aluno_salvar ) {
+
+            finalizaFormulario();
+
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void carregaAluno() {
@@ -59,21 +81,8 @@ public class FormularioAlunoActivity extends AppCompatActivity {
         campoemail.setText(aluno.getEmail());
     }
 
-    private void configuraBotaoSalvar() {
-        Button botao_salvar = findViewById(R.id.activity_formulario_aluno_botao_salvar);
-        botao_salvar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                preencheAluno();
-                finalizaFormulario();
-
-            }
-        });
-    }
-
     public void finalizaFormulario() {
-
+        preencheAluno();
         if (aluno.temIdValido()){
 
             dao.edita( aluno );
